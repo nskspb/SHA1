@@ -8,6 +8,6 @@ int main()
 
     SHA1 sum(stroka);
 
-    std::cout << "SHA1 digest of:" << stroka << " is: " << std::endl;
+    std::cout << "SHA1 digest of:" << sum.hash() << " is: " << std::endl;
     return 0;
 }

@@ -19,7 +19,7 @@ private:
     std::string buffer;
 };
 
-uint32_t K[] = {0x5a827999, 0x6ed9eba1, 0x8f1bbcdc, 0x5a827999};
+uint32_t K[] = {0x5a827999, 0x6ed9eba1, 0x8f1bbcdc, 0xca62c1d6};
 
 const size_t number_block32 = 16; // number of 32-bit blocks in 512-bit block
 const size_t number_bytes = 64;   // number of bytes in 512-bit block
@@ -42,7 +42,7 @@ SHA1 ::SHA1()
 
 SHA1 ::SHA1(const std::string &s)
 {
-    SHA1();
+    reset(digest, buffer);
     buffer = s;
 }
 
@@ -91,6 +91,7 @@ void Round0(uint32_t block[number_block32], uint32_t &a, uint32_t &b, uint32_t &
     e = d;
     d = c;
     c = cirshleft(b, 30);
+    b = a;
     a = temp;
 }
 
@@ -101,6 +102,7 @@ void Round1(uint32_t block[number_block32], uint32_t &a, uint32_t &b, uint32_t &
     e = d;
     d = c;
     c = cirshleft(b, 30);
+    b = a;
     a = temp;
 }
 
@@ -111,6 +113,7 @@ void Round2(uint32_t block[number_block32], uint32_t &a, uint32_t &b, uint32_t &
     e = d;
     d = c;
     c = cirshleft(b, 30);
+    b = a;
     a = temp;
 }
 
@@ -121,6 +124,7 @@ void Round3(uint32_t block[number_block32], uint32_t &a, uint32_t &b, uint32_t &
     e = d;
     d = c;
     c = cirshleft(b, 30);
+    b = a;
     a = temp;
 }
 
@@ -131,6 +135,7 @@ void Round4(uint32_t block[number_block32], uint32_t &a, uint32_t &b, uint32_t &
     e = d;
     d = c;
     c = cirshleft(b, 30);
+    b = a;
     a = temp;
 }
 
@@ -156,10 +161,37 @@ std::string SHA1 ::hash()
     uint32_t d = digest[3];
     uint32_t e = digest[4];
 
-    Round0(block, a, b, c, d, e, 0);
-    Round0(block, a, b, c, d, e, 1);
-    Round0(block, a, b, c, d, e, 2);
-    Round0(block, a, b, c, d, e, 3);
+    for (size_t i = 0; i <= 15; ++i)
+    {
+        Round0(block, a, b, c, d, e, i);
+    }
 
+    for (size_t i = 16; i <= 19; ++i)
+    {
+        Round1(block, a, b, c, d, e, i);
+    }
+
+    for (size_t i = 20; i <= 39; ++i)
+    {
+        Round2(block, a, b, c, d, e, i);
+    }
+
+    for (size_t i = 40; i <= 59; ++i)
+    {
+        Round3(block, a, b, c, d, e, i);
+    }
+
+    for (size_t i = 60; i <= 79; ++i)
+    {
+        Round4(block, a, b, c, d, e, i);
+    }
+
+    digest[0] += a;
+    digest[1] += b;
+    digest[2] += c;
+    digest[3] += d;
+    digest[4] += e;
+
+    std::cout << digest[0] << "  " << digest[1] << "  " << digest[2] << "  " << digest[3] << "  " << digest[4] << std ::endl;
     return "Excellent";
 }
