@@ -16,7 +16,7 @@ public:
 
 private:
     uint32_t digest[5];
-    std::string block512;
+    std::string buffer;
 };
 
 uint32_t K[] = {0x5a827999, 0x6ed9eba1, 0x8f1bbcdc, 0x5a827999};
@@ -24,7 +24,7 @@ uint32_t K[] = {0x5a827999, 0x6ed9eba1, 0x8f1bbcdc, 0x5a827999};
 const size_t number_block32 = 16; // number of 32-bit blocks in 512-bit block
 const size_t number_bytes = 64;   // number of bytes in 512-bit block
 
-void reset(uint32_t digest[], std::string &block512)
+void reset(uint32_t digest[], std::string &buffer)
 {
     digest[0] = 0x67452301;
     digest[1] = 0xefcdab89;
@@ -32,18 +32,18 @@ void reset(uint32_t digest[], std::string &block512)
     digest[3] = 0x10325476;
     digest[4] = 0xc3d2e1f0;
 
-    block512 = "";
+    buffer = "";
 }
 
 SHA1 ::SHA1()
 {
-    reset(digest, block512);
+    reset(digest, buffer);
 }
 
 SHA1 ::SHA1(const std::string &s)
 {
     SHA1();
-    block512 = s;
+    buffer = s;
 }
 
 uint32_t cirshleft(uint32_t value, int bits)
@@ -132,4 +132,34 @@ void Round4(uint32_t block[number_block32], uint32_t &a, uint32_t &b, uint32_t &
     d = c;
     c = cirshleft(b, 30);
     a = temp;
+}
+
+std::string SHA1 ::hash()
+{
+    uint64_t message_length = buffer.size() * 8;
+
+    // buffer initialization
+    buffer += (char)0x80;
+    while (buffer.size() != number_bytes)
+    {
+        buffer += (char)0x00;
+    }
+
+    uint32_t block[number_block32];
+    buffer_to_block(buffer, block);
+    block[number_block32 - 1] = (uint32_t)(message_length);
+
+    // 80 rounds of algorithm
+    uint32_t a = digest[0];
+    uint32_t b = digest[1];
+    uint32_t c = digest[2];
+    uint32_t d = digest[3];
+    uint32_t e = digest[4];
+
+    Round0(block, a, b, c, d, e, 0);
+    Round0(block, a, b, c, d, e, 1);
+    Round0(block, a, b, c, d, e, 2);
+    Round0(block, a, b, c, d, e, 3);
+
+    return "Excellent";
 }
