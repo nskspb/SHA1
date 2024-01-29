@@ -14,7 +14,7 @@ public:
     SHA1();
     SHA1(const std::string &s);
 
-    int hash();
+    std::string hash();
 
 private:
     uint32_t digest[5];
@@ -197,7 +197,7 @@ void Rounds(uint32_t digest[], std::vector<uint32_t> M_blocks)
     digest[4] = e + e0;
 }
 
-int SHA1 ::hash()
+std::string SHA1 ::hash()
 {
     uint64_t message_length = buffer.size() * 8;
 
@@ -216,7 +216,9 @@ int SHA1 ::hash()
     M_blocks = M(block);
 
     Rounds(digest, M_blocks);
+    std::ostringstream result;
 
-    std::cout << std::setfill('0') << std::setw(8) << std::hex << digest[0] << digest[1] << digest[2] << digest[3] << digest[4] << '\n';
-    return 0;
+    result << std::setfill('0') << std::setw(8) << std::hex;
+    result << digest[0] << digest[1] << digest[2] << digest[3] << digest[4] << '\n';
+    return result.str();
 }
