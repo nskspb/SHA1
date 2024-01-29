@@ -16,7 +16,7 @@ public:
     std::string hash();
 
 private:
-    const uint32_t digest[5] = {0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0};
+    uint32_t digest[5];
     std::string buffer;
 };
 
@@ -27,11 +27,11 @@ const size_t number_bytes = 64;   // number of bytes in 512-bit block
 
 void reset(uint32_t digest[], std::string &buffer)
 {
-    /* digest[0] = 0x67452301;
-     digest[1] = 0xefcdab89;
-     digest[2] = 0x98badcfe;
-     digest[3] = 0x10325476;
-     digest[4] = 0xc3d2e1f0;*/
+    digest[0] = 0x67452301;
+    digest[1] = 0xefcdab89;
+    digest[2] = 0x98badcfe;
+    digest[3] = 0x10325476;
+    digest[4] = 0xc3d2e1f0;
 
     buffer = "";
 }
@@ -143,11 +143,17 @@ void Round4(uint32_t block[number_block32], uint32_t &a, uint32_t &b, uint32_t &
 void Rounds(uint32_t digest[], uint32_t block[number_block32])
 {
     // 80 rounds of algorithm
-    uint32_t a = digest[0];
-    uint32_t b = digest[1];
-    uint32_t c = digest[2];
-    uint32_t d = digest[3];
-    uint32_t e = digest[4];
+    uint32_t a0 = digest[0];
+    uint32_t b0 = digest[1];
+    uint32_t c0 = digest[2];
+    uint32_t d0 = digest[3];
+    uint32_t e0 = digest[4];
+
+    uint32_t a = a0;
+    uint32_t b = b0;
+    uint32_t c = c0;
+    uint32_t d = d0;
+    uint32_t e = e0;
 
     for (size_t i = 0; i <= 15; ++i)
     {
@@ -166,7 +172,7 @@ void Rounds(uint32_t digest[], uint32_t block[number_block32])
 
     for (size_t i = 40; i <= 59; ++i)
     {
-        Round4(block, a, b, c, d, e, i);
+        Round3(block, a, b, c, d, e, i);
     }
 
     for (size_t i = 60; i <= 79; ++i)
@@ -174,11 +180,11 @@ void Rounds(uint32_t digest[], uint32_t block[number_block32])
         Round4(block, a, b, c, d, e, i);
     }
 
-    digest[0] += a;
-    digest[1] += b;
-    digest[2] += c;
-    digest[3] += d;
-    digest[4] += e;
+    digest[0] = a + a0;
+    digest[1] = b + b0;
+    digest[2] = c + c0;
+    digest[3] = d + d0;
+    digest[4] = e + e0;
 }
 
 std::string SHA1 ::hash()
