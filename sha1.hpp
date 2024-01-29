@@ -13,7 +13,7 @@ public:
     SHA1();
     SHA1(const std::string &s);
 
-    std::string hash();
+    int hash();
 
 private:
     uint32_t digest[5];
@@ -187,7 +187,7 @@ void Rounds(uint32_t digest[], uint32_t block[number_block32])
     digest[4] = e + e0;
 }
 
-std::string SHA1 ::hash()
+int SHA1 ::hash()
 {
     uint64_t message_length = buffer.size() * 8;
 
@@ -207,4 +207,5 @@ std::string SHA1 ::hash()
     // std::cout << digest[0] << "  " << digest[1] << "  " << digest[2] << "  " << digest[3] << "  " << digest[4] << std ::endl;
 
     std::cout << std::setfill('0') << std::setw(8) << std::hex << digest[0] << digest[1] << digest[2] << digest[3] << digest[4] << '\n';
+    return 0;
 }
