@@ -66,9 +66,9 @@ uint32_t M(uint32_t block[number_block32], const size_t i)
 }
 
 // В случае, если важна экономия памяти, используем данную функцию
-/*uint32_t blk(const uint32_t block[BLOCK_INTS], const size_t i)
+/*uint32_t M(uint32_t block[number_block32], const size_t i)
 {
-    return rol(block[(i + 13) & 15] ^ block[(i + 8) & 15] ^ block[(i + 2) & 15] ^ block[i], 1);
+    return cirshleft(block[(i + 13) & 15] ^ block[(i + 8) & 15] ^ block[(i + 2) & 15] ^ block[i], 1);
 }*/
 
 uint32_t F0(uint32_t &b, uint32_t &c, uint32_t &d)
