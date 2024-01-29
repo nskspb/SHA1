@@ -3,6 +3,7 @@
 #include <string>
 #include <iostream>
 #include <iomanip>
+#include <vector>
 
 // можно использовать -exec set output-radix 16 в консоли отладки,
 // чтобы в отладчике были 16-ричные значения
@@ -18,6 +19,7 @@ public:
 private:
     uint32_t digest[5];
     std::string buffer;
+    std::vector<uint32_t> M_blocks;
 };
 
 uint32_t K[] = {0x5a827999, 0x6ed9eba1, 0x8f1bbcdc, 0xca62c1d6};
@@ -60,9 +62,21 @@ void buffer_to_block(std::string &buffer, uint32_t block[number_block32])
     }
 }
 
-uint32_t M(uint32_t block[number_block32], const size_t i)
+std::vector<uint32_t> M(uint32_t block[number_block32])
 {
-    return cirshleft(block[i - 16] ^ block[i - 14] ^ block[i - 8] ^ block[i - 3], 1);
+    std::vector<uint32_t> M_blocks;
+    M_blocks.resize(80);
+
+    for (size_t i = 0; i < 16; ++i)
+    {
+        M_blocks[i] = block[i];
+    }
+
+    for (size_t i = 16; i < 80; ++i)
+    {
+        M_blocks[i] = cirshleft(M_blocks[i - 16] ^ M_blocks[i - 14] ^ M_blocks[i - 8] ^ M_blocks[i - 3], 1);
+    }
+    return M_blocks;
 }
 
 // В случае, если важна экономия памяти, используем данную функцию
@@ -86,9 +100,9 @@ uint32_t F2(uint32_t &b, uint32_t &c, uint32_t &d)
     return (b & c) | (b & d) | (c & d);
 }
 
-void Round0(uint32_t block[number_block32], uint32_t &a, uint32_t &b, uint32_t &c, uint32_t &d, uint32_t &e, size_t i)
+void Round0(std::vector<uint32_t> M_blocks, uint32_t &a, uint32_t &b, uint32_t &c, uint32_t &d, uint32_t &e, size_t i)
 {
-    uint32_t temp = cirshleft(a, 5) + F0(b, c, d) + e + block[i] + K[0];
+    uint32_t temp = cirshleft(a, 5) + F0(b, c, d) + e + M_blocks[i] + K[0];
     e = d;
     d = c;
     c = cirshleft(b, 30);
@@ -96,10 +110,9 @@ void Round0(uint32_t block[number_block32], uint32_t &a, uint32_t &b, uint32_t &
     a = temp;
 }
 
-void Round1(uint32_t block[number_block32], uint32_t &a, uint32_t &b, uint32_t &c, uint32_t &d, uint32_t &e, size_t i)
+void Round1(std::vector<uint32_t> M_blocks, uint32_t &a, uint32_t &b, uint32_t &c, uint32_t &d, uint32_t &e, size_t i)
 {
-    block[i] = M(block, i);
-    uint32_t temp = cirshleft(a, 5) + F0(b, c, d) + e + block[i] + K[0];
+    uint32_t temp = cirshleft(a, 5) + F0(b, c, d) + e + M_blocks[i] + K[0];
     e = d;
     d = c;
     c = cirshleft(b, 30);
@@ -107,10 +120,9 @@ void Round1(uint32_t block[number_block32], uint32_t &a, uint32_t &b, uint32_t &
     a = temp;
 }
 
-void Round2(uint32_t block[number_block32], uint32_t &a, uint32_t &b, uint32_t &c, uint32_t &d, uint32_t &e, size_t i)
+void Round2(std::vector<uint32_t> M_blocks, uint32_t &a, uint32_t &b, uint32_t &c, uint32_t &d, uint32_t &e, size_t i)
 {
-    block[i] = M(block, i);
-    uint32_t temp = cirshleft(a, 5) + F1(b, c, d) + e + block[i] + K[1];
+    uint32_t temp = cirshleft(a, 5) + F1(b, c, d) + e + M_blocks[i] + K[1];
     e = d;
     d = c;
     c = cirshleft(b, 30);
@@ -118,10 +130,9 @@ void Round2(uint32_t block[number_block32], uint32_t &a, uint32_t &b, uint32_t &
     a = temp;
 }
 
-void Round3(uint32_t block[number_block32], uint32_t &a, uint32_t &b, uint32_t &c, uint32_t &d, uint32_t &e, size_t i)
+void Round3(std::vector<uint32_t> M_blocks, uint32_t &a, uint32_t &b, uint32_t &c, uint32_t &d, uint32_t &e, size_t i)
 {
-    block[i] = M(block, i);
-    uint32_t temp = cirshleft(a, 5) + F2(b, c, d) + e + block[i] + K[2];
+    uint32_t temp = cirshleft(a, 5) + F2(b, c, d) + e + M_blocks[i] + K[2];
     e = d;
     d = c;
     c = cirshleft(b, 30);
@@ -129,10 +140,9 @@ void Round3(uint32_t block[number_block32], uint32_t &a, uint32_t &b, uint32_t &
     a = temp;
 }
 
-void Round4(uint32_t block[number_block32], uint32_t &a, uint32_t &b, uint32_t &c, uint32_t &d, uint32_t &e, size_t i)
+void Round4(std::vector<uint32_t> M_blocks, uint32_t &a, uint32_t &b, uint32_t &c, uint32_t &d, uint32_t &e, size_t i)
 {
-    block[i] = M(block, i);
-    uint32_t temp = cirshleft(a, 5) + F1(b, c, d) + e + block[i] + K[3];
+    uint32_t temp = cirshleft(a, 5) + F1(b, c, d) + e + M_blocks[i] + K[3];
     e = d;
     d = c;
     c = cirshleft(b, 30);
@@ -140,7 +150,7 @@ void Round4(uint32_t block[number_block32], uint32_t &a, uint32_t &b, uint32_t &
     a = temp;
 }
 
-void Rounds(uint32_t digest[], uint32_t block[number_block32])
+void Rounds(uint32_t digest[], std::vector<uint32_t> M_blocks)
 {
     // 80 rounds of algorithm
     uint32_t a0 = digest[0];
@@ -157,27 +167,27 @@ void Rounds(uint32_t digest[], uint32_t block[number_block32])
 
     for (size_t i = 0; i <= 15; ++i)
     {
-        Round0(block, a, b, c, d, e, i);
+        Round0(M_blocks, a, b, c, d, e, i);
     }
 
     for (size_t i = 16; i <= 19; ++i)
     {
-        Round1(block, a, b, c, d, e, i);
+        Round1(M_blocks, a, b, c, d, e, i);
     }
 
     for (size_t i = 20; i <= 39; ++i)
     {
-        Round2(block, a, b, c, d, e, i);
+        Round2(M_blocks, a, b, c, d, e, i);
     }
 
     for (size_t i = 40; i <= 59; ++i)
     {
-        Round3(block, a, b, c, d, e, i);
+        Round3(M_blocks, a, b, c, d, e, i);
     }
 
     for (size_t i = 60; i <= 79; ++i)
     {
-        Round4(block, a, b, c, d, e, i);
+        Round4(M_blocks, a, b, c, d, e, i);
     }
 
     digest[0] = a + a0;
@@ -202,9 +212,10 @@ int SHA1 ::hash()
     buffer_to_block(buffer, block);
     block[number_block32 - 1] = (uint32_t)(message_length);
 
-    Rounds(digest, block);
+    M_blocks.resize(80);
+    M_blocks = M(block);
 
-    // std::cout << digest[0] << "  " << digest[1] << "  " << digest[2] << "  " << digest[3] << "  " << digest[4] << std ::endl;
+    Rounds(digest, M_blocks);
 
     std::cout << std::setfill('0') << std::setw(8) << std::hex << digest[0] << digest[1] << digest[2] << digest[3] << digest[4] << '\n';
     return 0;
