@@ -2,6 +2,7 @@
 
 #include <string>
 #include <iostream>
+#include <iomanip>
 
 // можно использовать -exec set output-radix 16 в консоли отладки,
 // чтобы в отладчике были 16-ричные значения
@@ -15,7 +16,7 @@ public:
     std::string hash();
 
 private:
-    uint32_t digest[5];
+    const uint32_t digest[5] = {0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0};
     std::string buffer;
 };
 
@@ -26,11 +27,11 @@ const size_t number_bytes = 64;   // number of bytes in 512-bit block
 
 void reset(uint32_t digest[], std::string &buffer)
 {
-    digest[0] = 0x67452301;
-    digest[1] = 0xefcdab89;
-    digest[2] = 0x98badcfe;
-    digest[3] = 0x10325476;
-    digest[4] = 0xc3d2e1f0;
+    /* digest[0] = 0x67452301;
+     digest[1] = 0xefcdab89;
+     digest[2] = 0x98badcfe;
+     digest[3] = 0x10325476;
+     digest[4] = 0xc3d2e1f0;*/
 
     buffer = "";
 }
@@ -139,21 +140,8 @@ void Round4(uint32_t block[number_block32], uint32_t &a, uint32_t &b, uint32_t &
     a = temp;
 }
 
-std::string SHA1 ::hash()
+void Rounds(uint32_t digest[], uint32_t block[number_block32])
 {
-    uint64_t message_length = buffer.size() * 8;
-
-    // buffer initialization
-    buffer += (char)0x80;
-    while (buffer.size() != number_bytes)
-    {
-        buffer += (char)0x00;
-    }
-
-    uint32_t block[number_block32];
-    buffer_to_block(buffer, block);
-    block[number_block32 - 1] = (uint32_t)(message_length);
-
     // 80 rounds of algorithm
     uint32_t a = digest[0];
     uint32_t b = digest[1];
@@ -178,7 +166,7 @@ std::string SHA1 ::hash()
 
     for (size_t i = 40; i <= 59; ++i)
     {
-        Round3(block, a, b, c, d, e, i);
+        Round4(block, a, b, c, d, e, i);
     }
 
     for (size_t i = 60; i <= 79; ++i)
@@ -191,7 +179,26 @@ std::string SHA1 ::hash()
     digest[2] += c;
     digest[3] += d;
     digest[4] += e;
+}
 
-    std::cout << digest[0] << "  " << digest[1] << "  " << digest[2] << "  " << digest[3] << "  " << digest[4] << std ::endl;
-    return "Excellent";
+std::string SHA1 ::hash()
+{
+    uint64_t message_length = buffer.size() * 8;
+
+    // buffer initialization
+    buffer += (char)0x80;
+    while (buffer.size() != number_bytes)
+    {
+        buffer += (char)0x00;
+    }
+
+    uint32_t block[number_block32];
+    buffer_to_block(buffer, block);
+    block[number_block32 - 1] = (uint32_t)(message_length);
+
+    Rounds(digest, block);
+
+    // std::cout << digest[0] << "  " << digest[1] << "  " << digest[2] << "  " << digest[3] << "  " << digest[4] << std ::endl;
+
+    std::cout << std::setfill('0') << std::setw(8) << std::hex << digest[0] << digest[1] << digest[2] << digest[3] << digest[4] << '\n';
 }
