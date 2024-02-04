@@ -4,7 +4,7 @@ Works for messages up to 512 bits long
 
 ## build and run
 
-cd "project directory"
-cmake . -B build
-cmake --build build
-./build/SHA-1
+cd "project directory" <br />
+cmake . -B build <br />
+cmake --build build <br />
+./build/SHA-1 <br />
