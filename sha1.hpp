@@ -112,7 +112,7 @@ void Round0(std::vector<uint32_t> M_blocks, uint32_t &a, uint32_t &b, uint32_t &
 
 void Round1(std::vector<uint32_t> M_blocks, uint32_t &a, uint32_t &b, uint32_t &c, uint32_t &d, uint32_t &e, size_t i)
 {
-    uint32_t temp = cirshleft(a, 5) + F0(b, c, d) + e + M_blocks[i] + K[0];
+    uint32_t temp = cirshleft(a, 5) + F1(b, c, d) + e + M_blocks[i] + K[1];
     e = d;
     d = c;
     c = cirshleft(b, 30);
@@ -122,16 +122,6 @@ void Round1(std::vector<uint32_t> M_blocks, uint32_t &a, uint32_t &b, uint32_t &
 
 void Round2(std::vector<uint32_t> M_blocks, uint32_t &a, uint32_t &b, uint32_t &c, uint32_t &d, uint32_t &e, size_t i)
 {
-    uint32_t temp = cirshleft(a, 5) + F1(b, c, d) + e + M_blocks[i] + K[1];
-    e = d;
-    d = c;
-    c = cirshleft(b, 30);
-    b = a;
-    a = temp;
-}
-
-void Round3(std::vector<uint32_t> M_blocks, uint32_t &a, uint32_t &b, uint32_t &c, uint32_t &d, uint32_t &e, size_t i)
-{
     uint32_t temp = cirshleft(a, 5) + F2(b, c, d) + e + M_blocks[i] + K[2];
     e = d;
     d = c;
@@ -140,7 +130,7 @@ void Round3(std::vector<uint32_t> M_blocks, uint32_t &a, uint32_t &b, uint32_t &
     a = temp;
 }
 
-void Round4(std::vector<uint32_t> M_blocks, uint32_t &a, uint32_t &b, uint32_t &c, uint32_t &d, uint32_t &e, size_t i)
+void Round3(std::vector<uint32_t> M_blocks, uint32_t &a, uint32_t &b, uint32_t &c, uint32_t &d, uint32_t &e, size_t i)
 {
     uint32_t temp = cirshleft(a, 5) + F1(b, c, d) + e + M_blocks[i] + K[3];
     e = d;
@@ -165,29 +155,24 @@ void Rounds(uint32_t digest[], std::vector<uint32_t> M_blocks)
     uint32_t d = d0;
     uint32_t e = e0;
 
-    for (size_t i = 0; i <= 15; ++i)
+    for (size_t i = 0; i <= 19; ++i)
     {
         Round0(M_blocks, a, b, c, d, e, i);
     }
 
-    for (size_t i = 16; i <= 19; ++i)
+    for (size_t i = 20; i <= 39; ++i)
     {
         Round1(M_blocks, a, b, c, d, e, i);
     }
 
-    for (size_t i = 20; i <= 39; ++i)
+    for (size_t i = 40; i <= 59; ++i)
     {
         Round2(M_blocks, a, b, c, d, e, i);
     }
 
-    for (size_t i = 40; i <= 59; ++i)
-    {
-        Round3(M_blocks, a, b, c, d, e, i);
-    }
-
     for (size_t i = 60; i <= 79; ++i)
     {
-        Round4(M_blocks, a, b, c, d, e, i);
+        Round3(M_blocks, a, b, c, d, e, i);
     }
 
     digest[0] = a + a0;
